@@ -74,7 +74,7 @@ module BackgroundWorker
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options={})
-        if defined?(Resque.redis.client)
+        if defined?(Resque)
           Resque.redis.client.disconnect
           Resque.redis.client.reconnect
         end
