@@ -77,6 +77,7 @@ module BackgroundWorker
         if defined?(Resque)
           Resque.redis.client.disconnect
           Resque.redis.client.reconnect
+          Rails.cache.reconnect
         end
         begin
           ActiveRecord::Base.verify_active_connections!
