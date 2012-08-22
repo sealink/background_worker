@@ -74,6 +74,10 @@ module BackgroundWorker
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options={})
+        if defined?(Resque.redis.client)
+          Resque.redis.client.disconnect
+          Resque.redis.client.reconnect
+        end
         begin
           ActiveRecord::Base.verify_active_connections!
           raise Exception, ":uid and :current_user_id are required arguments: Options given were: #{options.inspect}" if options['uid'].blank? || options['current_user_id'].blank?
