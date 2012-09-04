@@ -70,48 +70,53 @@ module BackgroundWorker
       end
 
 
+      def rescue_reconnect
+        Resque.redis.client.disconnect
+        Resque.redis.client.reconnect
+        Rails.cache.reconnect
+      end
+
+
       # This method is called by Resque
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options={})
-        if defined?(Resque)
-          Resque.redis.client.disconnect
-          Resque.redis.client.reconnect
-          Rails.cache.reconnect
+        rescue_reconnect if defined?(Resque)
+        ActiveRecord::Base.verify_active_connections!
+
+        raise ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
+        setup_logger(options['uid'])
+        raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
+        set_current_user(options['current_user_id'])
+
+        worker = self.new(options)
+        worker.report_progress "Task started"
+
+        returned_data = worker.send(method_name, options)
+
+        logger.info "returned date : #{returned_data.inspect}"
+        logger.info "completed : #{worker.state.completed}"
+        if !worker.state.completed
+          logger.info "data : #{worker.state.data}"
+          worker.state.data.merge!(hasherize_opts(returned_data, :key_if_not_hash => :result))
+          logger.info "data : #{worker.state.data}"
+          worker.report_successful
+          logger.info "report_sucessful"
         end
-        begin
-          ActiveRecord::Base.verify_active_connections!
-          raise Exception, ":uid and :current_user_id are required arguments: Options given were: #{options.inspect}" if options['uid'].blank? || options['current_user_id'].blank?
-          setup_logger(options['uid'])
-          set_current_user(options['current_user_id'])
 
-          worker = self.new(options)
-          worker.report_progress "Task started"
-
-          returned_data = worker.send(method_name, options)
-
-          logger.info "returned date : #{returned_data.inspect}"
-          logger.info "completed : #{worker.state.completed}"
-          if !worker.state.completed
-            logger.info "data : #{worker.state.data}"
-            worker.state.data.merge!(hasherize_opts(returned_data, :key_if_not_hash => :result))
-            logger.info "data : #{worker.state.data}"
-            worker.report_successful
-            logger.info "report_sucessful"
-          end
-
-        rescue Exception => e
-          puts "ERROR: #{e} \n #{e.backtrace.join("\n")}".color(:yellow)
+      rescue Exception => e
+        puts "ERROR: #{e} \n #{e.backtrace.join("\n")}".color(:yellow)
+        if logger
           logger.error "Exception: #{e}"
           logger.error " => AR Errors: #{e.record.errors.full_messages.to_sentence}" if e.is_a?(ActiveRecord::RecordInvalid)
           logger.error "#{e.backtrace.join("\n")}"
+        end
 
-          # This seems to be fucking up:
+        # This seems to be fucking up:
 #          log_exception(e)
 
-          if !worker.state.completed
-            worker.report_failed "An unhandled exception occured: #{e}"
-          end
+        if worker && !worker.state.completed
+          worker.report_failed "An unhandled exception occured: #{e}"
         end
       end
 
