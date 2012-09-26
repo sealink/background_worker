@@ -6,7 +6,7 @@
 module BackgroundWorker
   class PersistentState
 
-    attr_accessor :message, :status, :completed, :data
+    attr_accessor :message, :detailed_message, :status, :completed, :data
 
     def initialize(worker_uid, data)
       @message = "Waiting for task to queue..."
@@ -48,6 +48,7 @@ module BackgroundWorker
     def generate_persistent_hash
       {
         :message => message,
+        :detailed_message => detailed_message,
         :status => status,
         :completed => completed,
         :data => data

@@ -44,7 +44,8 @@ module BackgroundWorker
     end
 
 
-    def report_failed(message="Failed")
+    def report_failed(message="Failed", detailed_message = nil)
+      state.detailed_message = detailed_message
       state.set_completed(message, :failed)
     end
 
