@@ -113,8 +113,7 @@ module BackgroundWorker
           logger.error "#{e.backtrace.join("\n")}"
         end
 
-        # This seems to be fucking up:
-#          log_exception(e)
+        BackgroundWorker.after_exception.call(e) if BackgroundWorker.after_exception
 
         if worker && !worker.state.completed
           worker.report_failed "An unhandled exception occured: #{e}"
