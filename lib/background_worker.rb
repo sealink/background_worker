@@ -8,7 +8,7 @@ module BackgroundWorker
     if block
       @@after_exception = block
     else
-      @@after_exception
+      @@after_exception if defined?(@@after_exception)
     end
   end
 end
