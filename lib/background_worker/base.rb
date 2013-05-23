@@ -14,8 +14,8 @@ module BackgroundWorker
 
       # Store state persistently, to enable status checkups & progress reporting
       @state = BackgroundWorker::PersistentState.new(@uid, options.except('uid'))
-      logger.info("Created #{self.class.to_s}")
-      logger.info("Options are: #{options.pretty_inspect}")
+      log("Created #{self.class.to_s}")
+      log("Options are: #{options.pretty_inspect}")
     end
 
 
@@ -50,7 +50,13 @@ module BackgroundWorker
     end
 
 
+    def log(message, severity = :info)
+      self.class.log("#{@uid}: #{message}", severity)
+    end
+
+
     class << self
+
       def get_state_of(worker_id)
         BackgroundWorker::PersistentState.get_state_of(worker_id)
       end
@@ -58,9 +64,7 @@ module BackgroundWorker
       # Public method to do in background...
       def perform_in_background(method_name, options={})
         method_name = method_name.to_sym
-        if !options[:uid]
-          options[:uid] = generate_uid(method_name)
-        end
+        options[:uid] ||= generate_uid(method_name)
 
         # Store into redis before putting job out
         BackgroundWorker::PersistentState.new(options[:uid], options.except(:uid))
@@ -86,7 +90,7 @@ module BackgroundWorker
         ActiveRecord::Base.verify_active_connections!
 
         raise ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
-        setup_logger(options['uid'])
+        setup_logger(method_name)
         raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
         set_current_user(options['current_user_id'])
 
@@ -95,22 +99,22 @@ module BackgroundWorker
 
         returned_data = worker.send(method_name, options)
 
-        logger.info "returned date : #{returned_data.inspect}"
-        logger.info "completed : #{worker.state.completed}"
+        worker.log "returned data : #{returned_data.inspect}"
+        worker.log "completed : #{worker.state.completed}"
         if !worker.state.completed
-          logger.info "data : #{worker.state.data}"
+          worker.log "data : #{worker.state.data}"
           worker.state.data.merge!(hasherize_opts(returned_data, :key_if_not_hash => :result))
-          logger.info "data : #{worker.state.data}"
+          worker.log "data : #{worker.state.data}"
           worker.report_successful
-          logger.info "report_sucessful"
+          worker.log "report_sucessful"
         end
 
       rescue Exception => e
         puts "ERROR: #{e} \n #{e.backtrace.join("\n")}".color(:yellow)
         if logger
-          logger.error "Exception: #{e}"
-          logger.error " => AR Errors: #{e.record.errors.full_messages.to_sentence}" if e.is_a?(ActiveRecord::RecordInvalid)
-          logger.error "#{e.backtrace.join("\n")}"
+          log("#{options['uid']}: Exception: #{e}", :error)
+          log("#{options['uid']}: Invalid Record: #{e.record.errors.full_messages.to_sentence}", :error) if e.is_a?(ActiveRecord::RecordInvalid)
+          log("#{options['uid']}: #{e.backtrace.join("\n")}", :error)
         end
 
         BackgroundWorker.after_exception.call(e) if BackgroundWorker.after_exception
@@ -138,39 +142,56 @@ module BackgroundWorker
 
       # Setup logger
       #  - is ok as a class variable, as we should be forked out
-      def setup_logger(file_name)
+      def setup_logger(method)
         log_dir = "#{Rails.root.to_s}/log/background_jobs"
         Dir.mkdir(log_dir) unless File.exist?(log_dir)
 
+        file_name = generate_uid_name(method)
+
         # TODO: Issue here -- it seems to switch out progress reports -- so a web servers log file???
-        my_logger = ActiveSupport::BufferedLogger.new(log_dir + "/#{file_name}")
-        @@logger = my_logger
+        @@logger = ActiveSupport::BufferedLogger.new(log_dir + "/#{file_name}")
+      end
+
+
+      def log(message, severity = :info)
+        logger.send(severity, "[#{Time.current.xmlschema}] #{message}")
       end
 
 
       def set_current_user(current_user_id)
         Thread.current['user'] = Party.find(current_user_id)
       end
-    end
 
 
-    protected
+      protected
 
-    def self.hasherize_opts(opts, args={})
-      if opts.is_a?(Hash)
-        opts
-      else
-        {(args[:key_if_not_hash] || :result) => opts}
+      def hasherize_opts(opts, args={})
+        if opts.is_a?(Hash)
+          opts
+        else
+          {(args[:key_if_not_hash] || :result) => opts}
+        end
       end
+
+
+      private
+
+      # generates a unique identifier for this particular job.
+      def generate_uid(method)
+        "#{ generate_uid_name(method) }:#{ generate_uid_hash(method) }"
+      end
+
+
+      def generate_uid_hash(method)
+        ::Digest::MD5.hexdigest("#{ self.to_s }:#{ method }:#{ rand(1 << 64) }:#{ Time.now }")
+      end
+
+
+      def generate_uid_name(method)
+        "#{ self.to_s.underscore }/#{ method }".split('/').join(':')
+      end
+
     end
 
-
-    private
-
-    # generates a unique identifier for this particular job.
-    def self.generate_uid(method)
-      uid = ::Digest::MD5.hexdigest("#{ self.to_s }:#{ method }:#{ rand(1 << 64) }:#{ Time.now }")
-      "#{ self.to_s.tableize }/#{ method }/#{ uid }".split("/").join(":")
-    end
   end
 end
