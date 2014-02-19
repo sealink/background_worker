@@ -110,7 +110,7 @@ module BackgroundWorker
         end
 
       rescue Exception => e
-        puts "ERROR: #{e} \n #{e.backtrace.join("\n")}".color(:yellow)
+        puts "ERROR: #{e} \n #{e.backtrace.join("\n")}"
         if logger
           log("#{options['uid']}: Exception: #{e}", :error)
           log("#{options['uid']}: Invalid Record: #{e.record.errors.full_messages.to_sentence}", :error) if e.is_a?(ActiveRecord::RecordInvalid)
