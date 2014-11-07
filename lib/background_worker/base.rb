@@ -120,7 +120,7 @@ module BackgroundWorker
         BackgroundWorker.after_exception.call(e) if BackgroundWorker.after_exception
 
         if worker && !worker.state.completed
-          worker.report_failed "An unhandled exception occured: #{e}"
+          worker.report_failed "An unhandled exception occurred: #{e}"
         end
       end
 
