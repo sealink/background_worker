@@ -69,7 +69,8 @@ module BackgroundWorker
         # Store into redis before putting job out
         BackgroundWorker::PersistentState.new(options[:uid], options.except(:uid))
 
-        Resque.enqueue(self, method_name, options)
+        # Enqueue to the background queue
+        BackgroundWorker.enqueue(self, method_name, options)
 
         return options[:uid]
       end
@@ -82,7 +83,7 @@ module BackgroundWorker
       end
 
 
-      # This method is called by Resque
+      # This method is called by the job runner
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options={})
