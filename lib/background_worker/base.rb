@@ -4,9 +4,6 @@ module BackgroundWorker
     attr_accessor :uid, :state
     cattr_accessor :logger
 
-    delegate :report_successful, :report_failed, :to => :state
-
-
     def initialize(options={})
       Time.zone = Setting.time_zone
 
