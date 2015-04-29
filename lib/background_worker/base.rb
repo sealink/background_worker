@@ -84,32 +84,32 @@ module BackgroundWorker
       def perform(method_name, options={})
         raise ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
         BackgroundWorker.verify_active_connections!
-        raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
 
+        # Special 'user' handling
+        raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
         set_current_user(options['current_user_id'])
 
         worker = self.new(options)
-        worker.log "started"
         worker.report_progress "Task started"
-
         returned_data = worker.send(method_name, options)
 
-        worker.log "returned data : #{returned_data.inspect}"
-        worker.log "completed : #{worker.state.completed}"
+        # If not explicitly completed, set completed now
         if !worker.state.completed
-          worker.log "data : #{worker.state.data}"
           worker.state.data.merge!(hasherize_opts(returned_data, :key_if_not_hash => :result))
-          worker.log "data : #{worker.state.data}"
           worker.report_successful
-          worker.log "report_sucessful"
         end
 
       rescue Exception => e
-        worker.log("Exception occured: #{e}", :error) if worker
+        if worker
+          worker.log("Implicit failure: Exception occurred: #{e}", severity: :error)
+          worker.report_failed("An unhandled exception occurred: #{e}") if !worker.state.completed
+        end
         BackgroundWorker.after_exception.call(e)
 
-        if worker && !worker.state.completed
-          worker.report_failed "An unhandled exception occurred: #{e}"
+      ensure
+        if worker
+          worker.log "Final state: #{worker.state.data}", severity: :info
+          worker.log "Job was #{worker.state.status}", severity: :info
         end
       end
 
