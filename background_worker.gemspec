@@ -1,73 +1,23 @@
-## This is the rakegem gemspec template. Make sure you read and understand
-## all of the comments. Some sections require modification, and others can
-## be deleted if you don't need them. Once you understand the contents of
-## this file, feel free to delete any comments that begin with two hash marks.
-## You can find comprehensive Gem::Specification documentation, at
-## http://docs.rubygems.org/read/chapter/20
-Gem::Specification.new do |s|
-  s.specification_version = 2 if s.respond_to? :specification_version=
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.rubygems_version = '1.3.5'
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'background_worker/version'
 
-  ## Leave these as is they will be modified for you by the rake gemspec task.
-  ## If your rubyforge_project name is different, then edit it and comment out
-  ## the sub! line in the Rakefile
-  s.name              = 'background_worker'
-  s.version           = '0.0.2'
-  s.date              = '2013-05-23'
-  s.rubyforge_project = 'background_worker'
+Gem::Specification.new do |spec|
+  spec.name          = 'background_worker'
+  spec.version       = BackgroundWorker::VERSION
+  spec.authors       = ['Michael Noack', 'Adam Davies', 'Alessandro Berardi']
+  spec.email         = ['development@travellink.com.au', 'adzdavies@gmail.com', 'berardialessandro@gmail.com']
+  spec.summary       = %q{Background worker abstraction with status updates}
+  spec.description   = %q{See README for full details}
+  spec.homepage      = 'http://github.com/sealink/background_worker'
+  spec.license       = 'MIT'
 
-  ## Make sure your summary is short. The description may be as long
-  ## as you like.
-  s.summary     = "Wrapper for background workers"
-  s.description = "See README for full details on how to install, use, etc."
+  spec.files         = `git ls-files -z`.split("\x0")
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ['lib']
 
-  ## List the primary authors. If there are a bunch of authors, it's probably
-  ## better to set the email to an email list or something. If you don't have
-  ## a custom homepage, consider using your GitHub URL or the like.
-  s.authors  = ["Michael Noack, Adam Davies, Anuj Luthra, Alessandro Berardi"]
-  s.email    = 'development@travellink.com.au'
-  s.homepage = 'http://github.com/sealink/background_worker'
-
-  ## This gets added to the $LOAD_PATH so that 'lib/NAME.rb' can be required as
-  ## require 'NAME.rb' or'/lib/NAME/file.rb' can be as require 'NAME/file.rb'
-  s.require_paths = %w[lib]
-
-  ## This sections is only necessary if you have C extensions.
-  # s.require_paths << 'ext'
-  # s.extensions = %w[ext/extconf.rb]
-
-  ## If your gem includes any executables, list them here.
-  # s.executables = ["name"]
-
-  ## Specify any RDoc options here. You'll want to add your README and
-  ## LICENSE files to the extra_rdoc_files list.
-  s.rdoc_options = ["--charset=UTF-8"]
-  s.extra_rdoc_files = %w[README.md LICENSE]
-
-  ## List your runtime dependencies here. Runtime dependencies are those
-  ## that are needed for an end user to actually USE your code.
-
-  ## List your development dependencies here. Development dependencies are
-  ## those that are only needed during development
-  # s.add_development_dependency('DEVDEPNAME', [">= 1.1.0", "< 2.0.0"])
-
-  ## Leave this section as-is. It will be automatically generated from the
-  ## contents of your Git repository via the gemspec task. DO NOT REMOVE
-  ## THE MANIFEST COMMENTS, they are used as delimiters by the task.
-  # = MANIFEST =
-  s.files = %w[
-    LICENSE
-    README.md
-    Rakefile
-    background_worker.gemspec
-    lib/background_worker.rb
-    lib/background_worker/base.rb
-    lib/background_worker/persistent_state.rb
-  ]
-  # = MANIFEST =
-
-  ## Test files will be grabbed from the file list. Make sure the path glob
-  ## matches what you actually use.
-  s.test_files = s.files.select { |path| path =~ /^test\/test_.*\.rb/ }
+  spec.add_development_dependency 'bundler', '~> 1.7'
+  spec.add_development_dependency 'rake', '~> 10.0'
 end
