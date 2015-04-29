@@ -78,21 +78,12 @@ module BackgroundWorker
       end
 
 
-      def rescue_reconnect
-        Resque.redis.client.disconnect
-        Resque.redis.client.reconnect
-        Rails.cache.reconnect
-      end
-
-
       # This method is called by the job runner
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options={})
-        rescue_reconnect if defined?(Resque)
-        ActiveRecord::Base.verify_active_connections!
-
         raise ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
+        BackgroundWorker.verify_active_connections!
         raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
 
         set_current_user(options['current_user_id'])

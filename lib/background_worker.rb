@@ -39,4 +39,9 @@ module BackgroundWorker
   def self.logger=(logger)
     @@logger = logger
   end
+
+  def self.verify_active_connections!
+    Rails.cache.reconnect if defined?(Rails)
+    ActiveRecord::Base.verify_active_connections! if defined?(ActiveRecord)
+  end
 end
