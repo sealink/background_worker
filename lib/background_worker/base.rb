@@ -2,7 +2,6 @@ module BackgroundWorker
   class Base
 
     attr_accessor :uid, :state
-    cattr_accessor :logger
 
     def initialize(options={})
       Time.zone = Setting.time_zone
@@ -47,8 +46,14 @@ module BackgroundWorker
     end
 
 
-    def log(message, severity = :info)
-      self.class.log("#{@uid}: #{message}", severity)
+    def logger
+      BackgroundWorker.logger
+    end
+
+
+    def log(message, options={})
+      severity = options.fetch(:severity, :info)
+      logger.send(severity, "uid=#{uid} #{message}")
     end
 
 
@@ -88,11 +93,12 @@ module BackgroundWorker
         ActiveRecord::Base.verify_active_connections!
 
         raise ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
-        setup_logger(method_name)
         raise ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
+
         set_current_user(options['current_user_id'])
 
         worker = self.new(options)
+        worker.log "started"
         worker.report_progress "Task started"
 
         returned_data = worker.send(method_name, options)
@@ -108,35 +114,12 @@ module BackgroundWorker
         end
 
       rescue Exception => e
-        puts "ERROR: #{e} \n #{e.backtrace.join("\n")}"
-        if logger
-          log("#{options['uid']}: Exception: #{e}", :error)
-          log("#{options['uid']}: Invalid Record: #{e.record.errors.full_messages.to_sentence}", :error) if e.is_a?(ActiveRecord::RecordInvalid)
-          log("#{options['uid']}: #{e.backtrace.join("\n")}", :error)
-        end
-
-        BackgroundWorker.after_exception.call(e) if BackgroundWorker.after_exception
+        worker.log("Exception occured: #{e}", :error) if worker
+        BackgroundWorker.after_exception.call(e)
 
         if worker && !worker.state.completed
           worker.report_failed "An unhandled exception occurred: #{e}"
         end
-      end
-
-      # Setup logger
-      #  - is ok as a class variable, as we should be forked out
-      def setup_logger(method)
-        log_dir = "#{Rails.root.to_s}/log/background_jobs"
-        Dir.mkdir(log_dir) unless File.exist?(log_dir)
-
-        file_name = generate_uid_name(method)
-
-        # TODO: Issue here -- it seems to switch out progress reports -- so a web servers log file???
-        @@logger = ActiveSupport::BufferedLogger.new(log_dir + "/#{file_name}")
-      end
-
-
-      def log(message, severity = :info)
-        logger.send(severity, "[#{Time.current.xmlschema}] #{message}")
       end
 
 

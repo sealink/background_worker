@@ -6,9 +6,14 @@ module BackgroundWorker
   def self.after_exception(&block)
     if block
       @@after_exception = block
-    else
-      @@after_exception if defined?(@@after_exception)
+      return
     end
+
+    @@after_exception ||= -> e {
+      logger.error "** No after_exception handler installed **"
+      logger.error "Exception: #{e}"
+      logger.error "#{e.backtrace.join("\n")}"
+    }
   end
 
   # Provide your own background worker enqueue implementation
@@ -25,5 +30,13 @@ module BackgroundWorker
 
   def self.enqueue_with(&block)
     @@enqueue_with = block
+  end
+
+  def self.logger
+    @@logger ||= Logger.new(STDOUT)
+  end
+
+  def self.logger=(logger)
+    @@logger = logger
   end
 end
