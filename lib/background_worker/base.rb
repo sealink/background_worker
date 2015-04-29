@@ -125,22 +125,6 @@ module BackgroundWorker
         end
       end
 
-      # LEGACY METHOD -- use instead of Resque.enqueu if you wanna spawn later...
-      # Fork off, and do some work!
-      #
-      # Tell a spawning worker class to instantiate itself, and run a method
-      def forked_send(method_name, options={})
-        worker_name = "#QT-WRK# #{self}::#{method_name}"
-         
-        # Fork off...
-        #
-        # Note: exceptions are trapped in here.
-        worker.spawn(:kill => true, :method => :fork, :argv => worker_name, :nice => 5) do
-          worker.perform(method_name, options)
-        end
-      end
-
-
       # Setup logger
       #  - is ok as a class variable, as we should be forked out
       def setup_logger(method)
