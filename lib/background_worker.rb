@@ -9,11 +9,11 @@ module BackgroundWorker
       return
     end
 
-    @@after_exception ||= -> e {
-      logger.error "** No after_exception handler installed **"
+    @@after_exception ||= lambda  do |e|
+      logger.error '** No after_exception handler installed **'
       logger.error "Exception: #{e}"
       logger.error "#{e.backtrace.join("\n")}"
-    }
+    end
   end
 
   # Provide your own background worker enqueue implementation

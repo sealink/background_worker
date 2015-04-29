@@ -5,11 +5,10 @@
 # keyed by the worker_uid.
 module BackgroundWorker
   class PersistentState
-
     attr_accessor :message, :detailed_message, :status, :completed, :data
 
     def initialize(worker_uid, data)
-      @message = "Waiting for task to queue..."
+      @message = 'Waiting for task to queue...'
       @status = :processing
       @completed = false
 
@@ -17,7 +16,6 @@ module BackgroundWorker
       @data = data
       save
     end
-
 
     def set_completed(message, status)
       self.status = status
@@ -27,12 +25,10 @@ module BackgroundWorker
       save
     end
 
-
     # Save persistently (well for an hour at least)
     def save
-      Rails.cache.write(@worker_uid, generate_persistent_hash, :expires_in => 1.hour)
+      Rails.cache.write(@worker_uid, generate_persistent_hash, expires_in: 1.hour)
     end
-
 
     # Get a report out the queue
     # (was .get_report, then .progress)
@@ -40,18 +36,17 @@ module BackgroundWorker
       Rails.cache.read(worker_uid)
     end
 
-
     private
 
     # Generate a hash of this objects state
     #  (representing this status progress report)
     def generate_persistent_hash
       {
-        :message => message,
-        :detailed_message => detailed_message,
-        :status => status,
-        :completed => completed,
-        :data => data
+        message: message,
+        detailed_message: detailed_message,
+        status: status,
+        completed: completed,
+        data: data
       }
     end
   end

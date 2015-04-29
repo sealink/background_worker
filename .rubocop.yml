@@ -1,0 +1,11 @@
+Metrics/LineLength:
+  Max: 100
+
+Documentation:
+  Enabled: false
+
+Style/BlockDelimiters:
+  EnforcedStyle: semantic
+
+Style/TrivialAccessors:
+  AllowPredicates: true

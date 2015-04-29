@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = BackgroundWorker::VERSION
   spec.authors       = ['Michael Noack', 'Adam Davies', 'Alessandro Berardi']
   spec.email         = ['development@travellink.com.au', 'adzdavies@gmail.com', 'berardialessandro@gmail.com']
-  spec.summary       = %q{Background worker abstraction with status updates}
-  spec.description   = %q{See README for full details}
+  spec.summary       = 'Background worker abstraction with status updates'
+  spec.description   = 'See README for full details'
   spec.homepage      = 'http://github.com/sealink/background_worker'
   spec.license       = 'MIT'
 
@@ -20,4 +20,5 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
+  spec.add_development_dependency 'rubocop'
 end
