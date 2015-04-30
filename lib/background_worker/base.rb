@@ -25,10 +25,11 @@ module BackgroundWorker
 
       # Only report minor events once per second
       @last_report ||= Time.now - 2
-      if Time.now - @last_report > 1
-        @last_report = Time.now
-        state.save
-      end
+      time_elapsed =  Time.now - @last_report
+      return unless time_elapsed > 1
+
+      @last_report = Time.now
+      state.save
     end
 
     def report_successful(message = 'Finished successfully')
@@ -57,7 +58,7 @@ module BackgroundWorker
       # Public method to do in background...
       def perform_in_background(method_name, options = {})
         method_name = method_name.to_sym
-        options[:uid] ||= generate_uid(method_name)
+        options[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
 
         # Store into redis before putting job out
         BackgroundWorker::PersistentState.new(options[:uid], options.except(:uid))
@@ -72,64 +73,18 @@ module BackgroundWorker
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options = {})
-        fail ArgumentError, ":uid is required: Options given were: #{options.inspect}" if options['uid'].blank?
         BackgroundWorker.verify_active_connections!
 
         # Special 'user' handling
-        fail ArgumentError, ":current_user_id is required: Options given were: #{options.inspect}" if options['current_user_id'].blank?
-        set_current_user(options['current_user_id'])
+        store_current_user_in_thread(options['current_user_id'])
 
         worker = new(options)
-        worker.report_progress 'Task started'
-        returned_data = worker.send(method_name, options)
-
-        # If not explicitly completed, set completed now
-        unless worker.state.completed
-          worker.state.data.merge!(hasherize_opts(returned_data, key_if_not_hash: :result))
-          worker.report_successful
-        end
-
-      rescue Exception => e
-        if worker
-          worker.log("Implicit failure: Exception occurred: #{e}", severity: :error)
-          worker.report_failed("An unhandled exception occurred: #{e}") unless worker.state.completed
-        end
-        BackgroundWorker.after_exception.call(e)
-
-      ensure
-        if worker
-          worker.log "Final state: #{worker.state.data}", severity: :info
-          worker.log "Job was #{worker.state.status}", severity: :info
-        end
+        execution = WorkerExecution.new(worker, method_name, options)
+        execution.call
       end
 
-      def set_current_user(current_user_id)
+      def store_current_user_in_thread(current_user_id)
         Thread.current['user'] = Party.find(current_user_id)
-      end
-
-      protected
-
-      def hasherize_opts(opts, args = {})
-        if opts.is_a?(Hash)
-          opts
-        else
-          { (args[:key_if_not_hash] || :result) => opts }
-        end
-      end
-
-      private
-
-      # generates a unique identifier for this particular job.
-      def generate_uid(method)
-        "#{ generate_uid_name(method) }:#{ generate_uid_hash(method) }"
-      end
-
-      def generate_uid_hash(method)
-        ::Digest::MD5.hexdigest("#{ self }:#{ method }:#{ rand(1 << 64) }:#{ Time.now }")
-      end
-
-      def generate_uid_name(method)
-        "#{ to_s.underscore }/#{ method }".split('/').join(':')
       end
     end
   end
