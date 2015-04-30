@@ -60,7 +60,7 @@ module BackgroundWorker
         method_name = method_name.to_sym
         options[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
 
-        # Store into redis before putting job out
+        # Store into shared-cache before kicking job off
         BackgroundWorker::PersistentState.new(options[:uid], options.except(:uid))
 
         # Enqueue to the background queue
