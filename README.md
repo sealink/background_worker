@@ -23,14 +23,20 @@ klass#perform_in_background which exists in Base:
 
    worker_id = MyWorker.perform_in_background(:my_task, message: "hello!")
 
-By default this will call your instance method in the foreground -- you have to
-provide an enqueueing method with the #enqueue method like so:
+# Backgrounded
 
-    BackgroundWorker.enqueue_with do |klass, method_name, options|
-      Resque.enqueue(klass, method_name, options)
-    end
+By default this will call your instance method in the foreground -- you have to
+provide an #enqueue_with configuration like so:
+
+    BackgroundWorker.configure(
+      enqueue_with: -> klass, method_name, options {
+        Resque.enqueue(klass, method_name, options)
+      }
+    )
 
 This is independent of the status reporting which (currently) always uses Redis.
+
+# Getting the status
 
 The worker_id you are returned can be used to get the status, and
 whether the worker has finished successfully, failed, or in progress:
@@ -47,8 +53,7 @@ The state is represented by a hash with the following keys:
     data: Arbitrary data returned by worker method on success or report_failed
 
 If an exception is raised, the worker will call #report_failed with the
-details. You can provide a callback with
-BackgroundWorker#after_exception
+details. You can provide a callback with #after_exception in the config
 
 # INSTALLATION
 

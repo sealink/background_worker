@@ -1,35 +1,28 @@
 require 'background_worker/version'
+require 'background_worker/config'
 require 'background_worker/uid'
 require 'background_worker/base'
 require 'background_worker/persistent_state'
 
 module BackgroundWorker
-  def self.enqueue(klass, method_name, options)
-    if enqueue_with
-      enqueue_with.call(klass, method_name, options)
-    else
-      # No backgrounded by default
-      klass.perform(method_name, options)
-    end
+  # Configure worker
+  #
+  # eg:
+  # BackgroundWorker.configure(
+  #   logger: Rails.logger,
+  #   enqueue_with: -> klass, method_name, opts { Resque.enqueue(klass, method_name, opts) },
+  #   after_exception: -> e { Airbrake.notify(e) }
+  # )
+  def self.configure(options)
+    @config = Config.new(options)
   end
 
-  class << self
-    # Provide a logger
-    attr_writer :logger
-
-    attr_writer :after_exception
-
-    # Provide your own background worker enqueue implementation
-    #
-    # eg:
-    # BackgroundWorker.enqueue_with = -> klass, method_name, options {
-    #   Resque.enqueue(klass, method_name, options)
-    # }
-    attr_writer :enqueue_with
+  def self.enqueue(klass, method_name, options)
+    config.enqueue_with.call(klass, method_name, options)
   end
 
   def self.logger
-    @logger ||= Logger.new(STDOUT)
+    config.logger
   end
 
   def self.verify_active_connections!
@@ -37,11 +30,13 @@ module BackgroundWorker
     ActiveRecord::Base.verify_active_connections! if defined?(ActiveRecord)
   end
 
-  def self.after_exception(&_block)
-    @after_exception ||= lambda  do |e|
-      logger.error '** No after_exception handler installed **'
-      logger.error "Exception: #{e}"
-      logger.error "#{e.backtrace.join("\n")}"
-    end
+  def self.after_exception(e)
+    config.after_exception(e)
   end
+
+  def self.config
+    raise "Not configured!" unless @config
+    @config
+  end
+
 end
