@@ -1,3 +1,7 @@
+require 'background_worker/uid'
+require 'background_worker/persistent_state'
+require 'background_worker/worker_execution'
+
 module BackgroundWorker
   class Base
     attr_accessor :uid, :state
@@ -75,11 +79,9 @@ module BackgroundWorker
       def perform(method_name, options = {})
         BackgroundWorker.verify_active_connections!
 
-
         worker = new(options)
         execution = WorkerExecution.new(worker, method_name, options)
         execution.call
-
       end
     end
   end

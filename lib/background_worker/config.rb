@@ -2,8 +2,7 @@ require 'logger'
 
 module BackgroundWorker
   class Config
-
-     attr_reader :logger
+    attr_reader :logger
 
     # Configuration includes following options:
     #   logger: what logger to user throughout

@@ -1,8 +1,6 @@
 require 'background_worker/version'
 require 'background_worker/config'
-require 'background_worker/uid'
 require 'background_worker/base'
-require 'background_worker/persistent_state'
 
 module BackgroundWorker
   # Configure worker
@@ -35,7 +33,7 @@ module BackgroundWorker
   end
 
   def self.config
-    raise "Not configured!" unless @config
+    fail 'Not configured!' unless @config
     @config
   end
 
