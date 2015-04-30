@@ -75,16 +75,11 @@ module BackgroundWorker
       def perform(method_name, options = {})
         BackgroundWorker.verify_active_connections!
 
-        # Special 'user' handling
-        store_current_user_in_thread(options['current_user_id'])
 
         worker = new(options)
         execution = WorkerExecution.new(worker, method_name, options)
         execution.call
-      end
 
-      def store_current_user_in_thread(current_user_id)
-        Thread.current['user'] = Party.find(current_user_id)
       end
     end
   end

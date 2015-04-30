@@ -3,7 +3,7 @@ module BackgroundWorker
     attr_reader :worker, :method_name, :options
 
     def initialize(worker, method_name, options)
-      validate_hash(options, present: %w(uid current_user_id))
+      fail ArgumentError, "'uid' is required to identify worker" unless options['uid'].present?
       @worker = worker
       @method_name = method_name
       @options = options
@@ -22,14 +22,6 @@ module BackgroundWorker
     end
 
     private
-
-    def validate_hash(hash, opts = {})
-      present = opts.fetch(:present, [])
-      missing = Array(present).select { |key| hash[key].blank? }
-      return if missing.empty?
-
-      fail ArgumentError, "#{missing.join(', ')} are required in #{hash.inspect}"
-    end
 
     def completed?
       worker.state.completed
