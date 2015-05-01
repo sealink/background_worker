@@ -9,10 +9,10 @@ module BackgroundWorker
     def initialize(options = {})
       Time.zone = Setting.time_zone
 
-      @uid = options['uid']
+      @uid = options[:uid]
 
       # Store state persistently, to enable status checkups & progress reporting
-      @state = BackgroundWorker::PersistentState.new(@uid, options.except('uid'))
+      @state = BackgroundWorker::PersistentState.new(@uid, options.except(:uid))
       log("Created #{self.class}")
       log("Options are: #{options.pretty_inspect}")
     end
@@ -61,6 +61,8 @@ module BackgroundWorker
 
       # Public method to do in background...
       def perform_in_background(method_name, options = {})
+        options.symbolize_keys!
+
         method_name = method_name.to_sym
         options[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
 
