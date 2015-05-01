@@ -61,18 +61,18 @@ module BackgroundWorker
 
       # Public method to do in background...
       def perform_in_background(method_name, options = {})
-        options.symbolize_keys!
+        opts = options.symbolize_keys
 
         method_name = method_name.to_sym
-        options[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
+        opts[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
 
         # Store into shared-cache before kicking job off
-        BackgroundWorker::PersistentState.new(options[:uid], options.except(:uid))
+        BackgroundWorker::PersistentState.new(opts[:uid], opts.except(:uid))
 
         # Enqueue to the background queue
-        BackgroundWorker.enqueue(self, method_name, options)
+        BackgroundWorker.enqueue(self, method_name, opts)
 
-        options[:uid]
+        opts[:uid]
       end
 
       # This method is called by the job runner
