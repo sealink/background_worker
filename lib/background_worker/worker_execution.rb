@@ -15,7 +15,7 @@ module BackgroundWorker
 
     rescue StandardError => e
       log_worker_error(e)
-      BackgroundWorker.after_exception.call(e)
+      BackgroundWorker.after_exception(e)
 
     ensure
       log_worker_finality
