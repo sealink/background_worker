@@ -21,7 +21,7 @@ Start by making a worker class which extends from BackgroundWorker::Base
 Then, when you want to perform a task in the background, use
 klass#perform_in_background which exists in Base:
 
-   worker_id = MyWorker.perform_in_background(:my_task, message: "hello!")
+    worker_id = MyWorker.perform_in_background(:my_task, message: "hello!")
 
 # Backgrounded
 
@@ -38,8 +38,8 @@ This is independent of the status reporting which (currently) always uses Redis.
 
 # Getting the status
 
-The worker_id you are returned can be used to get the status, and
-whether the worker has finished successfully, failed, or in progress:
+The worker_id you are returned can be used to get the status and
+whether the worker has finished successfully, failed, or is still in progress:
 
     state = BackgroundWorker.get_state_of(worker_id)
 
@@ -53,12 +53,11 @@ The state is represented by a hash with the following keys:
     data: Arbitrary data returned by worker method on success or report_failed
 
 If an exception is raised, the worker will call #report_failed with the
-details. You can provide a callback with #after_exception in the config
+details. You can provide a callback with #after_exception in the config.
 
 # INSTALLATION
 
-gem install background_worker
+Add to your Gemfile:
 
-or add to your Gemfile:
-gem 'background_worker'
+    gem 'background_worker'
 
