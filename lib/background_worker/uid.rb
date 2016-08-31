@@ -12,6 +12,11 @@ module BackgroundWorker
       "#{generate_uid_name}:#{generate_uid_hash}"
     end
 
+    def self.parse(uid)
+      class_name, method, _hash = uid.split(':')
+      new(class_name.camelize, method)
+    end
+
     private
 
     def generate_uid_hash
