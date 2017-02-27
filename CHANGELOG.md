@@ -6,3 +6,4 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 ## Unreleased
 ### Added
 - [TT-1392] Changelog file
+- [TT-2141] Only verify connections for Rails 3
