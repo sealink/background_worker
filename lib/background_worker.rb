@@ -25,7 +25,9 @@ module BackgroundWorker
 
   def self.verify_active_connections!
     Rails.cache.reconnect if defined?(Rails)
-    ActiveRecord::Base.verify_active_connections! if defined?(ActiveRecord)
+    if defined?(ActiveRecord) && ActiveRecord::VERSION::MAJOR == 3
+      ActiveRecord::Base.verify_active_connections!
+    end
   end
 
   def self.after_exception(e)
