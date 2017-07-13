@@ -84,6 +84,8 @@ module BackgroundWorker
         worker = new(options)
         execution = WorkerExecution.new(worker, method_name, options)
         execution.call
+      ensure
+        BackgroundWorker.release_connections!
       end
     end
   end

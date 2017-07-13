@@ -30,6 +30,12 @@ module BackgroundWorker
     end
   end
 
+  def self.release_connections!
+    if defined?(ActiveRecord) && ActiveRecord::VERSION::MAJOR >= 4
+      ActiveRecord::Base.clear_all_connections!
+    end
+  end
+
   def self.after_exception(e)
     config.after_exception(e)
   end
