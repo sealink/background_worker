@@ -31,7 +31,7 @@ module BackgroundWorker
   end
 
   def self.release_connections!
-    if defined?(ActiveRecord) && ActiveRecord::VERSION::MAJOR == 4
+    if defined?(ActiveRecord) && ActiveRecord::VERSION::MAJOR >= 4
       ActiveRecord::Base.clear_all_connections!
     end
   end
