@@ -5,6 +5,8 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 
 ## Unreleased
 
+## 0.2.0
+### Added
 - [RU-79] Release connections after execution for Rails 4
 
 ## 0.1.0
