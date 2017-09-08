@@ -77,13 +77,13 @@ module BackgroundWorker
       #
       # It will just call your preferred method in the worker.
       def perform(method_name, options = {})
-        BackgroundWorker.verify_active_connections!
+        BackgroundWorker.verify_active_connections! if BackgroundWorker.config.backgrounded
 
         worker = new(options)
         execution = WorkerExecution.new(worker, method_name, options)
         execution.call
       ensure
-        BackgroundWorker.release_connections!
+        BackgroundWorker.release_connections! if BackgroundWorker.config.backgrounded
       end
     end
   end
