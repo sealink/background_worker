@@ -2,7 +2,7 @@ require 'logger'
 
 module BackgroundWorker
   class Config
-    attr_reader :logger, :enqueue_with
+    attr_reader :logger, :enqueue_with, :backgrounded
 
     # Configuration includes following options:
     #   logger: what logger to user throughout
@@ -19,6 +19,7 @@ module BackgroundWorker
       @logger = attrs.fetch(:logger, ::Logger.new(STDOUT))
       @enqueue_with = attrs.fetch(:enqueue_with, method(:foreground_enqueue))
       @after_exception = attrs.fetch(:after_exception, method(:default_after_exception))
+      @backgrounded = attrs.fetch(:backgrounded, true)
     end
 
     # Callback fired when an exception occurs
