@@ -7,14 +7,12 @@ module BackgroundWorker
     attr_accessor :uid, :state
 
     def initialize(options = {})
-      Time.zone = Setting.time_zone
-
       @uid = options[:uid]
 
       # Store state persistently, to enable status checkups & progress reporting
       @state = BackgroundWorker::PersistentState.new(@uid, options.except(:uid))
       log("Created #{self.class}")
-      log("Options are: #{options.pretty_inspect}")
+      log("Options are: #{options.inspect}")
     end
 
     # Report progress...
