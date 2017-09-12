@@ -4,6 +4,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).  
 
 ## Unreleased
+### Fixed
+- [RU-123] Worker disconnecting within transactions in rails 4+
 
 ## 0.2.0
 ### Added
