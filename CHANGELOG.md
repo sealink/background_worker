@@ -3,7 +3,9 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).  
 This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).  
 
-## Unreleased
+## 0.3.0 Unreleased
+
+- [TT-6292] Support Rails 5.2 built-in redis cache, remove legacy supports
 
 ## 0.2.1
 ### Fixed
