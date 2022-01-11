@@ -2,6 +2,7 @@
 
 [![Gem Version](https://badge.fury.io/rb/background_worker.svg)](http://badge.fury.io/rb/background_worker)
 [![Build Status](https://github.com/sealink/background_worker/workflows/Build%20and%20Test/badge.svg?branch=master)](https://github.com/sealink/background_worker/actions)
+[![Coverage Status](https://coveralls.io/repos/sealink/background_worker/badge.png)](https://coveralls.io/r/sealink/background_worker)
 
 Provides a worker abstraction with an additional status channel.
 
