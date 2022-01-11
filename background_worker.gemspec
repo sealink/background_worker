@@ -19,15 +19,13 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(/^bin\//) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(/^(test|spec|features)\//)
   spec.require_paths = ['lib']
-  spec.required_ruby_version = '>= 2.6'
+  spec.required_ruby_version = '>= 2.7'
 
   spec.add_development_dependency 'activesupport'
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
   spec.add_development_dependency 'rspec'
   spec.add_development_dependency 'coverage-kit'
-  spec.add_development_dependency 'coveralls'
-  spec.add_development_dependency 'simplecov-rcov'
   spec.add_development_dependency 'rubocop'
 
   spec.add_development_dependency 'activerecord'
