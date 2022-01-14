@@ -5,6 +5,10 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 
 ## Unreleased
 
+- [PLAT-183] Ruby 3.1, Rails 7.0 and push coverage with github action
+
+## 0.4.0
+
 - [TT-8623] Update to build with github actions / ruby 3.0 / rails 6.1
 
 ## 0.3.0

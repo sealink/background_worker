@@ -7,6 +7,7 @@
 
 require 'rubygems'
 require 'bundler/setup'
+require 'active_support'
 require 'active_support/core_ext/string/inflections' #underscore
 
 require 'support/coverage_loader'
