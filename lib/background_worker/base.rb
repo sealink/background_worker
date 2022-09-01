@@ -58,7 +58,7 @@ module BackgroundWorker
       end
 
       # Public method to do in background...
-      def perform_in_background(method_name, options = {})
+      def perform_later(method_name, options = {})
         opts = options.symbolize_keys
 
         method_name = method_name.to_sym
@@ -76,7 +76,7 @@ module BackgroundWorker
       # This method is called by the job runner
       #
       # It will just call your preferred method in the worker.
-      def perform(method_name, options = {})
+      def perform_now(method_name, options = {})
         BackgroundWorker.verify_active_connections! if BackgroundWorker.config.backgrounded
 
         worker = new(options)
