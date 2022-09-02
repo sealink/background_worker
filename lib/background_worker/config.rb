@@ -28,7 +28,7 @@ module BackgroundWorker
     end
 
     def foreground_enqueue(klass, method_name, opts)
-      klass.perform(method_name, opts)
+      klass.perform_now(method_name, opts)
     end
 
     def default_after_exception(e)
