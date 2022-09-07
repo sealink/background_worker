@@ -53,7 +53,7 @@ module BackgroundWorker
     end
 
     class << self
-      attr_accessor :queue
+      attr_reader :queue
       def get_state_of(worker_id)
         BackgroundWorker::PersistentState.get_state_of(worker_id)
       end
