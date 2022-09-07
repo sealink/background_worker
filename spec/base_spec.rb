@@ -36,4 +36,11 @@ describe BackgroundWorker::Base do
     end
     expect(cache).to have_received(:store).with(42)
   end
+
+  context '#queue_as' do
+    it 'should value queue correctly' do
+      worker_class.queue_as('low')
+      expect(worker_class.queue).to be :low
+    end
+  end
 end

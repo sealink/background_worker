@@ -53,6 +53,7 @@ module BackgroundWorker
     end
 
     class << self
+      attr_reader :queue
       def get_state_of(worker_id)
         BackgroundWorker::PersistentState.get_state_of(worker_id)
       end
@@ -84,6 +85,10 @@ module BackgroundWorker
         execution.call
       ensure
         BackgroundWorker.release_connections! if BackgroundWorker.config.backgrounded
+      end
+
+      def queue_as(queue = nil)
+        @queue = queue&.to_sym || :default
       end
     end
   end
