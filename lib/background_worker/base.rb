@@ -85,6 +85,10 @@ module BackgroundWorker
       ensure
         BackgroundWorker.release_connections! if BackgroundWorker.config.backgrounded
       end
+
+      def queue_as(queue = nil)
+        @queue = queue&.to_sym || :default
+      end
     end
   end
 end
