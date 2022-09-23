@@ -18,7 +18,7 @@ describe BackgroundWorker::Base do
   let(:model_class) { Model = Class.new(ActiveRecord::Base) }
   let(:worker_class) {
     Class.new(BackgroundWorker::Base) do
-      def store_in_cache(opts)
+      def perform(opts)
         Rails.cache.store(opts[:value])
       end
     end
@@ -32,7 +32,7 @@ describe BackgroundWorker::Base do
 
   it 'should perform action and handle transactions/connections appropriately' do
     Model.transaction do
-      worker_class.perform_later(:store_in_cache, value: 42)
+      worker_class.perform_later(value: 42)
     end
     expect(cache).to have_received(:store).with(42)
   end

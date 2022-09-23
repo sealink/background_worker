@@ -10,7 +10,7 @@ Start by making a worker class which extends from BackgroundWorker::Base
 
 ```ruby
     class MyWorker < BackgroundWorker::Base
-      def my_task(options={})
+      def perform(options={})
         report_progress('Starting')
         if options[:message].blank?
           report_failed("No message provided")
@@ -27,7 +27,7 @@ Then, when you want to perform a task in the background, use
 klass#perform_in_background which exists in Base:
 
 ```ruby
-    worker_id = MyWorker.perform_in_background(:my_task, message: "hello!")
+    worker_id = MyWorker.perform_later(message: "hello!")
 ```
 
 # Backgrounded
@@ -37,8 +37,8 @@ provide an #enqueue_with configuration like so:
 
 ```ruby
     BackgroundWorker.configure(
-      enqueue_with: -> klass, method_name, options {
-        Resque.enqueue(klass, method_name, options)
+      enqueue_with: -> klass, options {
+        Resque.enqueue(klass, options)
       }
     )
 ```
