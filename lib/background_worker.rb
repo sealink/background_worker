@@ -8,15 +8,15 @@ module BackgroundWorker
   # eg:
   # BackgroundWorker.configure(
   #   logger: Rails.logger,
-  #   enqueue_with: -> klass, method_name, opts { Resque.enqueue(klass, method_name, opts) },
+  #   enqueue_with: -> klass, opts { Resque.enqueue(klass, opts) },
   #   after_exception: -> e { Airbrake.notify(e) }
   # )
   def self.configure(options)
     @config = Config.new(options)
   end
 
-  def self.enqueue(klass, method_name, options)
-    config.enqueue_with.call(klass, method_name, options)
+  def self.enqueue(klass, options)
+    config.enqueue_with.call(klass, options)
   end
 
   def self.logger

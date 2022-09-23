@@ -2,15 +2,14 @@ module BackgroundWorker
   class WorkerExecution
     attr_reader :worker, :method_name, :options
 
-    def initialize(worker, method_name, options)
+    def initialize(worker, options)
       fail ArgumentError, "'uid' is required to identify worker" unless options[:uid].present?
       @worker = worker
-      @method_name = method_name
       @options = options
     end
 
     def call
-      worker.send(method_name, options)
+      worker.perform(options)
       report_implicitly_successful unless completed?
 
     rescue StandardError => e

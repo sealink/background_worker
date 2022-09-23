@@ -15,6 +15,10 @@ module BackgroundWorker
       log("Options are: #{options.inspect}")
     end
 
+    def perform
+      raise AbstractError, 'Must be implemented in Job Class'
+    end
+
     # Report progress...
     def report_progress(message)
       state.message = message
@@ -59,17 +63,16 @@ module BackgroundWorker
       end
 
       # Public method to do in background...
-      def perform_later(method_name, options = {})
+      def perform_later(options = {})
         opts = options.symbolize_keys
 
-        method_name = method_name.to_sym
-        opts[:uid] ||= BackgroundWorker::Uid.new(to_s, method_name).generate
+        opts[:uid] ||= BackgroundWorker::Uid.new(to_s).generate
 
         # Store into shared-cache before kicking job off
         BackgroundWorker::PersistentState.new(opts[:uid], opts.except(:uid))
 
         # Enqueue to the background queue
-        BackgroundWorker.enqueue(self, method_name, opts)
+        BackgroundWorker.enqueue(self, opts)
 
         opts[:uid]
       end
@@ -77,11 +80,11 @@ module BackgroundWorker
       # This method is called by the job runner
       #
       # It will just call your preferred method in the worker.
-      def perform_now(method_name, options = {})
+      def perform_now(options = {})
         BackgroundWorker.verify_active_connections! if BackgroundWorker.config.backgrounded
 
         worker = new(options)
-        execution = WorkerExecution.new(worker, method_name, options)
+        execution = WorkerExecution.new(worker, options)
         execution.call
       ensure
         BackgroundWorker.release_connections! if BackgroundWorker.config.backgrounded
