@@ -3,7 +3,6 @@ module BackgroundWorker
     attr_reader :worker, :method_name, :options
 
     def initialize(worker, options)
-      fail ArgumentError, "'uid' is required to identify worker" unless options[:uid].present?
       @worker = worker
       @options = options
     end

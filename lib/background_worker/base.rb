@@ -1,16 +1,15 @@
-require 'background_worker/uid'
 require 'background_worker/persistent_state'
 require 'background_worker/worker_execution'
 
 module BackgroundWorker
   class Base
-    attr_accessor :uid, :state
+    attr_accessor :job_id, :state
 
     def initialize(options = {})
-      @uid = options[:uid]
+      @job_id = options[:job_id] || SecureRandom.uuid
 
       # Store state persistently, to enable status checkups & progress reporting
-      @state = BackgroundWorker::PersistentState.new(@uid, options.except(:uid))
+      @state = BackgroundWorker::PersistentState.new(job_id, options)
       log("Created #{self.class}")
       log("Options are: #{options.inspect}")
     end
@@ -53,28 +52,22 @@ module BackgroundWorker
 
     def log(message, options = {})
       severity = options.fetch(:severity, :info)
-      logger.send(severity, "uid=#{uid} #{message}")
+      logger.send(severity, "job_id=#{job_id} #{message}")
     end
 
     class << self
       attr_reader :queue
-      def get_state_of(worker_id)
-        BackgroundWorker::PersistentState.get_state_of(worker_id)
+      def get_state_of(job_id)
+        BackgroundWorker::PersistentState.get_state_of(job_id)
       end
 
       # Public method to do in background...
       def perform_later(options = {})
         opts = options.symbolize_keys
-
-        opts[:uid] ||= BackgroundWorker::Uid.new(to_s).generate
-
-        # Store into shared-cache before kicking job off
-        BackgroundWorker::PersistentState.new(opts[:uid], opts.except(:uid))
-
+        worker = new(options)
         # Enqueue to the background queue
-        BackgroundWorker.enqueue(self, opts)
-
-        opts[:uid]
+        BackgroundWorker.enqueue(self, opts.merge(job_id: worker.job_id))
+        worker.job_id
       end
 
       # This method is called by the job runner

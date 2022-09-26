@@ -1,7 +1,12 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.  
 This project adheres to [Semantic Versioning](http://semver.org/).  
-This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).  
+This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
+
+## Unreleased
+
+- [PLAT-749] Rename `uid` as `job_id` and make it a base property of job.
 
 ## 0.8.1
 
@@ -32,14 +37,20 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 - [TT-6292] Support Rails 5.2 built-in redis cache, remove legacy supports
 
 ## 0.2.1
+
 ### Fixed
+
 - [RU-123] Worker disconnecting within transactions in rails 4+
 
 ## 0.2.0
+
 ### Added
+
 - [RU-79] Release connections after execution for Rails 4
 
 ## 0.1.0
+
 ### Added
+
 - [TT-1392] Changelog file
 - [TT-2141] Only verify connections for Rails 3
