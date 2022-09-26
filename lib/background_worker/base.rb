@@ -3,15 +3,16 @@ require 'background_worker/worker_execution'
 
 module BackgroundWorker
   class Base
-    attr_accessor :job_id, :state
+    attr_accessor :job_id, :state, :options
 
     def initialize(options = {})
-      @job_id = options[:job_id] || SecureRandom.uuid
+      @options = options.symbolize_keys
+      @job_id = @options[:job_id] || SecureRandom.uuid
 
       # Store state persistently, to enable status checkups & progress reporting
-      @state = BackgroundWorker::PersistentState.new(job_id, options)
+      @state = BackgroundWorker::PersistentState.new(job_id, @options)
       log("Created #{self.class}")
-      log("Options are: #{options.inspect}")
+      log("Options are: #{@options.inspect}")
     end
 
     def perform
@@ -41,6 +42,22 @@ module BackgroundWorker
       state.set_completed(message, :successful)
     end
 
+    def before_perform
+      yield self if block_given?
+    end
+
+    def after_perform
+      yield self if block_given?
+    end
+
+    def before_enqueue
+      yield self if block_given?
+    end
+
+    def after_enqueue
+      yield self if block_given?
+    end
+
     def report_failed(message = 'Failed', detailed_message = nil)
       state.detailed_message = detailed_message
       state.set_completed(message, :failed)
@@ -63,10 +80,11 @@ module BackgroundWorker
 
       # Public method to do in background...
       def perform_later(options = {})
-        opts = options.symbolize_keys
         worker = new(options)
         # Enqueue to the background queue
-        BackgroundWorker.enqueue(self, opts.merge(job_id: worker.job_id))
+        worker.before_enqueue
+        BackgroundWorker.enqueue(self, worker.options.merge(job_id: worker.job_id))
+        worker.after_enqueue
         worker.job_id
       end
 
