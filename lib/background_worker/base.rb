@@ -1,8 +1,10 @@
 require 'background_worker/persistent_state'
 require 'background_worker/worker_execution'
+require 'background_worker/logging_concern'
 
 module BackgroundWorker
   class Base
+    include BackgroundWorker::LoggingConcern
     attr_accessor :job_id, :state, :options
 
     def initialize(options = {})
@@ -61,15 +63,6 @@ module BackgroundWorker
     def report_failed(message = 'Failed', detailed_message = nil)
       state.detailed_message = detailed_message
       state.set_completed(message, :failed)
-    end
-
-    def logger
-      BackgroundWorker.logger
-    end
-
-    def log(message, options = {})
-      severity = options.fetch(:severity, :info)
-      logger.send(severity, "job_id=#{job_id} #{message}")
     end
 
     class << self
