@@ -3,9 +3,10 @@ require 'background_worker/worker_execution'
 
 module BackgroundWorker
   class Base
-    attr_accessor :job_id, :state
+    attr_accessor :job_id, :state, :options
 
     def initialize(options = {})
+      @options = options
       @job_id = options[:job_id] || SecureRandom.uuid
 
       # Store state persistently, to enable status checkups & progress reporting
