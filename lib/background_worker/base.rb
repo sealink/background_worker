@@ -41,6 +41,22 @@ module BackgroundWorker
       state.set_completed(message, :successful)
     end
 
+    def before_perform
+      yield self if block_given?
+    end
+
+    def after_perform
+      yield self if block_given?
+    end
+
+    def before_enqueue
+      yield self if block_given?
+    end
+
+    def after_enqueue
+      yield self if block_given?
+    end
+
     def report_failed(message = 'Failed', detailed_message = nil)
       state.detailed_message = detailed_message
       state.set_completed(message, :failed)
@@ -66,7 +82,9 @@ module BackgroundWorker
         opts = options.symbolize_keys
         worker = new(options)
         # Enqueue to the background queue
+        worker.before_enqueue
         BackgroundWorker.enqueue(self, opts.merge(job_id: worker.job_id))
+        worker.after_enqueue
         worker.job_id
       end
 

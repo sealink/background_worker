@@ -8,7 +8,9 @@ module BackgroundWorker
     end
 
     def call
+      worker.before_perform
       worker.perform(options)
+      worker.after_perform
       report_implicitly_successful unless completed?
 
     rescue StandardError => e

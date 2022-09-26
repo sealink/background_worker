@@ -44,3 +44,50 @@ describe BackgroundWorker::Base do
     end
   end
 end
+
+describe BackgroundWorker::Base do
+  describe 'callbacks' do
+    let(:cache) { double(write: nil, read: nil, reconnect: nil, store: nil) }
+    let(:model_class) { Model = Class.new(ActiveRecord::Base) }
+
+    let(:worker_class) {
+      Class.new(BackgroundWorker::Base) do
+        def perform(opts)
+          Rails.cache.store(opts[:value])
+        end
+
+        def before_perform
+          Rails.cache.store('before_perform_action')
+        end
+
+        def after_perform
+          Rails.cache.store('after_perform_action')
+        end
+
+        def before_enqueue
+          Rails.cache.store('before_enqueue_action')
+        end
+
+        def after_enqueue
+          Rails.cache.store('after_enqueue_action')
+        end
+      end
+    }
+
+    before do
+      stub_const 'Model', model_class
+      stub_const 'Rails', double(cache: cache, env: 'production')
+      BackgroundWorker.configure(backgrounded: false)
+    end
+
+    it 'should call perform callbacks' do
+      Model.transaction do
+        worker_class.perform_later(value: 42)
+      end
+      expect(cache).to have_received(:store).with('before_perform_action')
+      expect(cache).to have_received(:store).with('after_perform_action')
+      expect(cache).to have_received(:store).with('before_enqueue_action')
+      expect(cache).to have_received(:store).with('after_enqueue_action')
+    end
+  end
+end
