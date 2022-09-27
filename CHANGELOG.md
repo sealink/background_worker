@@ -10,6 +10,7 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 - [PLAT-759] Add callbacks
 - [PLAT-761] Extract logging concern
 - [PLAT-760] Extract status concern
+- [PLAT-762] Perform now and later will return job object
 
 ## 0.8.1
 
