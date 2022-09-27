@@ -1,9 +1,8 @@
 require 'active_support/concern'
 
 module BackgroundWorker
-  module LoggingConcern
+  module Logging
     extend ActiveSupport::Concern
-    attr_reader :job_id
 
     def logger
       BackgroundWorker.logger

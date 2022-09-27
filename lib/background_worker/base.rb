@@ -1,10 +1,10 @@
 require 'background_worker/persistent_state'
 require 'background_worker/worker_execution'
-require 'background_worker/logging_concern'
+require 'background_worker/logging'
 
 module BackgroundWorker
   class Base
-    include BackgroundWorker::LoggingConcern
+    include BackgroundWorker::Logging
     attr_accessor :job_id, :state, :options
 
     def initialize(options = {})
