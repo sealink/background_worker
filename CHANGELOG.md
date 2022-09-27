@@ -8,6 +8,7 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 
 - [PLAT-749] Rename `uid` as `job_id` and make it a base property of job.
 - [PLAT-759] Add callbacks
+- [PLAT-761] Extract logging concern
 
 ## 0.8.1
 
