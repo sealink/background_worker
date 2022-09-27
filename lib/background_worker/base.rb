@@ -47,18 +47,17 @@ module BackgroundWorker
         worker.before_enqueue
         BackgroundWorker.enqueue(self, worker.options.merge(job_id: worker.job_id))
         worker.after_enqueue
-        worker.job_id
+        worker
       end
 
       # This method is called by the job runner
-      #
-      # It will just call your preferred method in the worker.
       def perform_now(options = {})
         BackgroundWorker.verify_active_connections! if BackgroundWorker.config.backgrounded
 
         worker = new(options)
         execution = WorkerExecution.new(worker, options)
         execution.call
+        worker
       ensure
         BackgroundWorker.release_connections! if BackgroundWorker.config.backgrounded
       end
