@@ -1,3 +1,4 @@
+require "active_support/callbacks"
 require 'background_worker/persistent_state'
 require 'background_worker/worker_execution'
 require 'background_worker/logging'
@@ -5,9 +6,12 @@ require 'background_worker/state'
 
 module BackgroundWorker
   class Base
+    include ActiveSupport::Callbacks
     include BackgroundWorker::Logging
     include BackgroundWorker::State
     attr_accessor :job_id, :options
+    define_callbacks :perform
+    define_callbacks :enqueue
 
     def initialize(options = {})
       @options = options.symbolize_keys
@@ -17,24 +21,16 @@ module BackgroundWorker
       log("Options are: #{@options.inspect}")
     end
 
-    def perform
-      raise AbstractError, 'Must be implemented in Job Class'
+    def perform_now(options)
+      run_callbacks :perform do
+        perform(options)
+      end
     end
 
-    def before_perform
-      yield self if block_given?
-    end
-
-    def after_perform
-      yield self if block_given?
-    end
-
-    def before_enqueue
-      yield self if block_given?
-    end
-
-    def after_enqueue
-      yield self if block_given?
+    def enqueue(klass)
+      run_callbacks :enqueue do
+        BackgroundWorker.enqueue(klass, options.merge(job_id: job_id))
+      end
     end
 
     class << self
@@ -44,9 +40,7 @@ module BackgroundWorker
       def perform_later(options = {})
         worker = new(options)
         # Enqueue to the background queue
-        worker.before_enqueue
-        BackgroundWorker.enqueue(self, worker.options.merge(job_id: worker.job_id))
-        worker.after_enqueue
+        worker.enqueue(self)
         worker
       end
 
@@ -64,6 +58,22 @@ module BackgroundWorker
 
       def queue_as(queue = nil)
         @queue = queue&.to_sym || :default
+      end
+
+      def before_perform(*filters, &blk)
+        set_callback(:perform, :before, *filters, &blk)
+      end
+
+      def after_perform(*filters, &blk)
+        set_callback(:perform, :after, *filters, &blk)
+      end
+
+      def before_enqueue(*filters, &blk)
+        set_callback(:enqueue, :before, *filters, &blk)
+      end
+
+      def after_enqueue(*filters, &blk)
+        set_callback(:enqueue, :after, *filters, &blk)
       end
     end
   end

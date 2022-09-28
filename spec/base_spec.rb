@@ -56,19 +56,19 @@ describe BackgroundWorker::Base do
           Rails.cache.store(opts[:value])
         end
 
-        def before_perform
+        before_perform do
           Rails.cache.store('before_perform_action')
         end
 
-        def after_perform
+        after_perform do
           Rails.cache.store('after_perform_action')
         end
 
-        def before_enqueue
+        before_enqueue do
           Rails.cache.store('before_enqueue_action')
         end
 
-        def after_enqueue
+        after_enqueue do
           Rails.cache.store('after_enqueue_action')
         end
       end
@@ -84,9 +84,10 @@ describe BackgroundWorker::Base do
       Model.transaction do
         worker_class.perform_later(value: 42)
       end
-      expect(cache).to have_received(:store).with('before_perform_action')
-      expect(cache).to have_received(:store).with('after_perform_action')
       expect(cache).to have_received(:store).with('before_enqueue_action')
+      expect(cache).to have_received(:store).with('before_perform_action')
+      expect(cache).to have_received(:store).with(42)
+      expect(cache).to have_received(:store).with('after_perform_action')
       expect(cache).to have_received(:store).with('after_enqueue_action')
     end
   end

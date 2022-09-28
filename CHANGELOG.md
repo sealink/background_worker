@@ -11,6 +11,7 @@ This changelog adheres to [Keep a CHANGELOG](http://keepachangelog.com/).
 - [PLAT-761] Extract logging concern
 - [PLAT-760] Extract status concern
 - [PLAT-762] Perform now and later will return job object
+- [PLAT-780] Fix callbacks
 
 ## 0.8.1
 
