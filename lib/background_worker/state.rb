@@ -35,6 +35,7 @@ module BackgroundWorker
 
     def state
       # Store state persistently, to enable status checkups & progress reporting
+      @options ||= arguments.first || {}
       @state ||= BackgroundWorker::PersistentState.new(job_id, @options)
     end
 
